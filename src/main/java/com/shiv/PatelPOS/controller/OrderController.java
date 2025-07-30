@@ -1,12 +1,16 @@
 package com.shiv.PatelPOS.controller;
 
 import com.shiv.PatelPOS.dto.OrderRequestDTO;
+import com.shiv.PatelPOS.dto.OrderResponseDTO;
 import com.shiv.PatelPOS.entity.Order;
+import com.shiv.PatelPOS.mapper.OrderMapper;
 import com.shiv.PatelPOS.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -19,12 +23,18 @@ public class OrderController {
         this.orderService = orderService;
     }
     @PostMapping
-    public Order saveOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
-        return orderService.saveOrder(orderRequestDTO);
+    public ResponseEntity<OrderResponseDTO> saveOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
+        Order savedOrder = orderService.saveOrder(orderRequestDTO);
+        OrderResponseDTO responseDTO = OrderMapper.mapOrderResponseDTO(savedOrder);
+        return ResponseEntity.ok(responseDTO);
     }
     @GetMapping
-    public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
+        List<Order> orders = orderService.getAllOrders();
+        List<OrderResponseDTO> dtoList = orders.stream()
+                .map(OrderMapper::mapOrderResponseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtoList);
     }
     @PutMapping("/{id}")
     public Order updateOrder(@RequestBody Order order, @PathVariable("id") Long id) {

@@ -3,6 +3,7 @@ package com.shiv.PatelPOS.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+@Entity
 @Data
 public class OrderItem {
     @Id

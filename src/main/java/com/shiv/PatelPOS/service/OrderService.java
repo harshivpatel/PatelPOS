@@ -38,7 +38,7 @@ public class OrderService {
             Product product = productRepository.findById(itemDTO.getProductId())
                     .orElseThrow(() ->
                             new EntityNotFoundException
-                                    ("Product with not found with id " + itemDTO.getProductId()));
+                                    ("Product not found with id " + itemDTO.getProductId()));
 
             /// stock availability
             if(product.getStockQuantity() < itemDTO.getQuantity()) {
