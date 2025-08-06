@@ -3,10 +3,12 @@ package com.shiv.PatelPOS.controller;
 import com.shiv.PatelPOS.dto.OrderRequestDTO;
 import com.shiv.PatelPOS.dto.OrderResponseDTO;
 import com.shiv.PatelPOS.entity.Order;
+import com.shiv.PatelPOS.entity.Product;
 import com.shiv.PatelPOS.mapper.OrderMapper;
 import com.shiv.PatelPOS.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,5 +51,15 @@ public class OrderController {
     public String deleteOrder(@PathVariable("id") Long id) {
         orderService.deleteOrderById(id);
         return "Order Deleted Successfully";
+    }
+    @GetMapping("/search")
+    public ResponseEntity<List<OrderResponseDTO>> searchOrders(@RequestParam String keyword) {
+        List<Order> orders = orderService.searchOrders(keyword);
+        // Convert the list of Order entities to OrderResponseDTOs using the mapper
+        // and return the DTO list as the response body
+        List<OrderResponseDTO> orderResponseDTO = orders.stream()
+                .map(OrderMapper::mapOrderResponseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(orderResponseDTO);
     }
 }

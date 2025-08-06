@@ -2,6 +2,7 @@ package com.shiv.PatelPOS.service;
 
 import com.shiv.PatelPOS.dto.OrderItemsRequestDTO;
 import com.shiv.PatelPOS.dto.OrderRequestDTO;
+import com.shiv.PatelPOS.dto.OrderResponseDTO;
 import com.shiv.PatelPOS.entity.Order;
 import com.shiv.PatelPOS.entity.OrderItem;
 import com.shiv.PatelPOS.entity.Product;
@@ -150,5 +151,9 @@ public class OrderService {
     public String deleteOrderById(Long orderId) {
         orderRepository.deleteById(orderId);
         return "Order Deleted Successfully";
+    }
+    /// search and filter with keyword
+    public List<Order> searchOrders(String keyword) {
+        return orderRepository.searchOrders(keyword);
     }
 }
