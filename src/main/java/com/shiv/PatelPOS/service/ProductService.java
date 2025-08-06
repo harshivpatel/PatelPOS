@@ -53,4 +53,8 @@ public class ProductService {
     public void deleteProductById(Long productId) {
         productRepository.deleteById(productId);
     }
+    /// search with keyword
+    public List<Product> searchProducts(String keyword) {
+        return productRepository.searchProducts(keyword);
+    }
 }

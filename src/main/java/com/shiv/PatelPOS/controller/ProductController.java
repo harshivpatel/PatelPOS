@@ -7,6 +7,7 @@ import com.shiv.PatelPOS.mapper.ProductMapper;
 import com.shiv.PatelPOS.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,5 +44,10 @@ public class ProductController {
     public String deleteProductById(@PathVariable("id") Long id) {
         productService.deleteProductById(id);
         return "Deleted Successfully";
+    }
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyboard) {
+        List<Product> products = productService.searchProducts(keyboard);
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 }
