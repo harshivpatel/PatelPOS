@@ -4,6 +4,7 @@ import com.shiv.PatelPOS.entity.Product;
 import com.shiv.PatelPOS.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -56,5 +57,9 @@ public class ProductService {
     /// search with keyword
     public List<Product> searchProducts(String keyword) {
         return productRepository.searchProducts(keyword);
+    }
+    /// sorting based on field
+    public List<Product> findProductByField(String field) {
+        return productRepository.findAll(Sort.by(field));
     }
 }

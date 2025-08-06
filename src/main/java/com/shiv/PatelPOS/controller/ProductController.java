@@ -50,4 +50,9 @@ public class ProductController {
         List<Product> products = productService.searchProducts(keyboard);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
+    @GetMapping("/{field}")
+    public ResponseEntity<List<Product>> getProductWithSorting(@PathVariable String field) {
+        List<Product> products = productService.findProductByField(field);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 }
