@@ -1,9 +1,16 @@
 package com.shiv.PatelPOS.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class OrderItemsRequestDTO {
+
+    @NotNull(message = "Product ID is required")
     private Long productId;
-    private int quantity;
+
+    @NotNull(message = "Quantity is required")
+    @Min(value = 1, message = "Quantity must be at least 1")
+    private Integer quantity;
 }

@@ -5,6 +5,7 @@ import com.shiv.PatelPOS.dto.OrderResponseDTO;
 import com.shiv.PatelPOS.entity.Order;
 import com.shiv.PatelPOS.mapper.OrderMapper;
 import com.shiv.PatelPOS.service.OrderService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class OrderController {
         this.orderService = orderService;
     }
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> saveOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
+    public ResponseEntity<OrderResponseDTO> saveOrder(@Valid @RequestBody OrderRequestDTO orderRequestDTO) {
         Order savedOrder = orderService.saveOrder(orderRequestDTO);
         OrderResponseDTO responseDTO = OrderMapper.mapOrderResponseDTO(savedOrder);
         return ResponseEntity.ok(responseDTO);
@@ -37,8 +38,12 @@ public class OrderController {
         return ResponseEntity.ok(dtoList);
     }
     @PutMapping("/{id}")
-    public Order updateOrder(@RequestBody Order order, @PathVariable("id") Long id) {
-        return orderService.updateOrderById(order, id);
+    public ResponseEntity<OrderResponseDTO> updateOrder(
+            @RequestBody @Valid OrderRequestDTO orderRequestDTO,
+            @PathVariable("id") Long id) {
+        Order updatedOrder = orderService.updateOrderById(orderRequestDTO, id);
+        OrderResponseDTO orderResponseDTO = OrderMapper.mapOrderResponseDTO(updatedOrder);
+        return ResponseEntity.ok(orderResponseDTO);
     }
     @DeleteMapping("/{id}")
     public String deleteOrder(@PathVariable("id") Long id) {

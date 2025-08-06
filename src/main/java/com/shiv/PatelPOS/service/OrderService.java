@@ -27,7 +27,22 @@ public class OrderService {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
     }
-    /// save
+    /**
+     * Saves a new order with its associated order items.
+     *
+     * Steps:
+     * 1. Create an empty order with current date.
+     * 2. Loop through all items in the incoming request DTO.
+     *    - Fetch each product by ID.
+     *    - Check if sufficient stock is available.
+     *    - Deduct stock quantity.
+     *    - Create a new OrderItem with price, quantity, subtotal.
+     * 3. Add all items to the order and calculate total amount.
+     * 4. Persist the order to the database.
+     *
+     * @param orderRequestDTO the incoming request with product IDs and quantities
+     * @return the saved Order object
+     */
     public Order saveOrder(OrderRequestDTO orderRequestDTO) {
         Order order = new Order();
         order.setOrderDate(new Date());
@@ -71,20 +86,65 @@ public class OrderService {
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
-    /// update
-    public Order updateOrderById(Order updatedOrder, Long orderId) {
-        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+    /**
+     * Updates an existing order by its ID with new order item details.
+     *
+     * Steps:
+     * 1. Find the existing order using the provided orderId.
+     * 2. If found, clear the old order items.
+     * 3. Recalculate the total amount based on new items.
+     * 4. For each item in the request:
+     *    - Fetch the product from DB.
+     *    - Calculate subtotal (product price × quantity).
+     *    - Create a new OrderItem and associate with order.
+     * 5. Set the updated item list and total to the existing order.
+     * 6. Save and return the updated order.
+     *
+     * @param updatedOrder the new order data to update with
+     * @param orderId the ID of the order to update
+     * @return updated Order object
+     */
+    public Order updateOrderById(OrderRequestDTO updatedOrder, Long orderId) {
 
-        if(optionalOrder.isPresent()) {
-            Order existingOrder = optionalOrder.get();
-            existingOrder.setOrderItems(updatedOrder.getOrderItems());
-            existingOrder.setTotalAmount(updatedOrder.getTotalAmount());
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("order not found"));
 
-            return orderRepository.save(existingOrder);
+        // Restore product stock from old order items
+        for(OrderItem oldItem: existingOrder.getOrderItems()) {
+            Product product = oldItem.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + oldItem.getQuantity());
+            //product.getStockQuantity() is the total stock count of that product
+            // & oldItem.getQuantity() is the total stock ordered in that order
         }
-        else {
-            throw new EntityNotFoundException("Order not found with id " + orderId);
+
+        // Clearing the current items
+        existingOrder.getOrderItems().clear();
+
+        double totalAmount = 0.0;
+        List<OrderItem> newItems = new ArrayList<>();
+
+        for(OrderItemsRequestDTO itemDTO: updatedOrder.getItems()) {
+            Product product = productRepository.findById(itemDTO.getProductId())
+                    .orElseThrow(() ->
+                            new EntityNotFoundException
+                                    ("Product not found with id " + itemDTO.getProductId()));
+
+            double subTotal = product.getPrice() * itemDTO.getQuantity();
+            totalAmount = totalAmount + subTotal;
+
+            OrderItem item = new OrderItem();
+            item.setProduct(product);
+            item.setQuantity(itemDTO.getQuantity());
+            item.setPriceAtPurchase(product.getPrice());
+            item.setSubTotal(subTotal);
+            item.setOrder(existingOrder);
+
+            newItems.add(item);
         }
+        existingOrder.setOrderItems(newItems);
+        existingOrder.setTotalAmount(totalAmount);
+
+        return orderRepository.save(existingOrder);
     }
     /// delete
     public String deleteOrderById(Long orderId) {

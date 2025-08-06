@@ -1,8 +1,13 @@
 package com.shiv.PatelPOS.controller;
 
+import com.shiv.PatelPOS.dto.ProductRequestDTO;
+import com.shiv.PatelPOS.dto.ProductResponseDTO;
 import com.shiv.PatelPOS.entity.Product;
+import com.shiv.PatelPOS.mapper.ProductMapper;
 import com.shiv.PatelPOS.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +24,11 @@ public class ProductController {
     }
 
     @PostMapping
-    public Product saveProduct(@RequestBody Product product) {
-        return productService.saveProduct(product);
+    public ResponseEntity<ProductResponseDTO> saveProduct(@RequestBody @Valid ProductRequestDTO productRequestDTO) {
+        Product product = ProductMapper.toEntity(productRequestDTO);
+        Product savedProduct = productService.saveProduct(product);
+        ProductResponseDTO productResponseDTO = ProductMapper.toDTO(savedProduct);
+        return ResponseEntity.ok(productResponseDTO);
     }
 
     @GetMapping
