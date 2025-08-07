@@ -2,19 +2,23 @@ package com.shiv.PatelPOS.service;
 
 import com.shiv.PatelPOS.dto.OrderItemsRequestDTO;
 import com.shiv.PatelPOS.dto.OrderRequestDTO;
+import com.shiv.PatelPOS.dto.OrderResponseDTO;
 import com.shiv.PatelPOS.entity.Order;
 import com.shiv.PatelPOS.entity.OrderItem;
 import com.shiv.PatelPOS.entity.Product;
+import com.shiv.PatelPOS.mapper.OrderMapper;
 import com.shiv.PatelPOS.repository.OrderRepository;
 import com.shiv.PatelPOS.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -150,5 +154,13 @@ public class OrderService {
     public String deleteOrderById(Long orderId) {
         orderRepository.deleteById(orderId);
         return "Order Deleted Successfully";
+    }
+
+    /// sorting based on field
+    public  List<OrderResponseDTO> findOrderByField(String field) {
+        List<Order> orders = orderRepository.findAll(Sort.by(field));
+        return orders.stream()
+                .map(OrderMapper::mapOrderResponseDTO)
+                .collect(Collectors.toList());
     }
 }

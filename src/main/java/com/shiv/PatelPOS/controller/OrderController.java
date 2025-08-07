@@ -50,4 +50,10 @@ public class OrderController {
         orderService.deleteOrderById(id);
         return "Order Deleted Successfully";
     }
+    @GetMapping("/{field}")
+    public ResponseEntity<List<OrderResponseDTO>> getOrdersWithSorting(
+            @PathVariable String field) {
+        List<OrderResponseDTO> orderByField = orderService.findOrderByField(field);
+        return ResponseEntity.ok(orderByField);
+    }
 }
