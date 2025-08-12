@@ -1,8 +1,9 @@
-package com.shiv.PatelPOS.jwt;
+package com.shiv.PatelPOS.service;
 
 import com.shiv.PatelPOS.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -11,11 +12,13 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-        private static final String SECRET_KEY = "harshivpatelharshivpatelharshivpatel09";
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
+    @Value("${app.jwt.secret}")
+    private String secret;
 
+    @Value("${app.jwt.expiration-ms:86400000}")
+    private long expirationMs;
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     public String generateToken(User user) {
@@ -23,7 +26,7 @@ public class JwtService {
                 .setSubject(user.getUsername())
                 .claim("roles", user.getRoles())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

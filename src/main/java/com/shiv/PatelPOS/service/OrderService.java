@@ -13,15 +13,17 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
+
     @Autowired
     private final OrderRepository orderRepository;
     @Autowired
@@ -31,43 +33,38 @@ public class OrderService {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
     }
+
     /**
      * Saves a new order with its associated order items.
-     *
-     * Steps:
-     * 1. Create an empty order with current date.
-     * 2. Loop through all items in the incoming request DTO.
-     *    - Fetch each product by ID.
-     *    - Check if sufficient stock is available.
-     *    - Deduct stock quantity.
-     *    - Create a new OrderItem with price, quantity, subtotal.
-     * 3. Add all items to the order and calculate total amount.
-     * 4. Persist the order to the database.
-     *
-     * @param orderRequestDTO the incoming request with product IDs and quantities
-     * @return the saved Order object
      */
+    @Transactional
     public Order saveOrder(OrderRequestDTO orderRequestDTO) {
+        if (orderRequestDTO.getPaymentMode() == null) {
+            throw new IllegalArgumentException("Payment mode must be provided");
+        }
+
         Order order = new Order();
-        order.setOrderDate(new Date());
+        order.setOrderDate(LocalDateTime.now());
+        order.setPaymentMode(orderRequestDTO.getPaymentMode());
+
         List<OrderItem> orderItems = new ArrayList<>();
         double totalAmount = 0.0;
 
-        for(OrderItemsRequestDTO itemDTO: orderRequestDTO.getItems()) {
+        for (OrderItemsRequestDTO itemDTO : orderRequestDTO.getItems()) {
             Product product = productRepository.findById(itemDTO.getProductId())
                     .orElseThrow(() ->
-                            new EntityNotFoundException
-                                    ("Product not found with id " + itemDTO.getProductId()));
+                            new EntityNotFoundException("Product not found with id " + itemDTO.getProductId()));
 
-            /// stock availability
-            if(product.getStockQuantity() < itemDTO.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient stock for the product " + product.getName());
+            // Check stock
+            if (product.getStockQuantity() < itemDTO.getQuantity()) {
+                throw new IllegalArgumentException("Insufficient stock for product " + product.getName());
             }
 
-            /// decrease product stock
+            // Deduct stock
             product.setStockQuantity(product.getStockQuantity() - itemDTO.getQuantity());
+            productRepository.save(product);
 
-            /// create order item
+            // Create order item
             OrderItem orderItem = new OrderItem();
             orderItem.setProduct(product);
             orderItem.setQuantity(itemDTO.getQuantity());
@@ -75,66 +72,61 @@ public class OrderService {
             orderItem.setSubTotal(product.getPrice() * itemDTO.getQuantity());
             orderItem.setOrder(order);
 
-            ///  add to order
             orderItems.add(orderItem);
-
-            /// total running price
-            totalAmount = totalAmount + product.getPrice() * itemDTO.getQuantity();
+            totalAmount += orderItem.getSubTotal();
         }
+
         order.setOrderItems(orderItems);
         order.setTotalAmount(totalAmount);
 
         return orderRepository.save(order);
     }
-    /// get
+
+    /**
+     * Get all orders.
+     */
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
+
     /**
      * Updates an existing order by its ID with new order item details.
-     *
-     * Steps:
-     * 1. Find the existing order using the provided orderId.
-     * 2. If found, clear the old order items.
-     * 3. Recalculate the total amount based on new items.
-     * 4. For each item in the request:
-     *    - Fetch the product from DB.
-     *    - Calculate subtotal (product price × quantity).
-     *    - Create a new OrderItem and associate with order.
-     * 5. Set the updated item list and total to the existing order.
-     * 6. Save and return the updated order.
-     *
-     * @param updatedOrder the new order data to update with
-     * @param orderId the ID of the order to update
-     * @return updated Order object
      */
+    @Transactional
     public Order updateOrderById(OrderRequestDTO updatedOrder, Long orderId) {
-
-        Order existingOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("order not found"));
-
-        // Restore product stock from old order items
-        for(OrderItem oldItem: existingOrder.getOrderItems()) {
-            Product product = oldItem.getProduct();
-            product.setStockQuantity(product.getStockQuantity() + oldItem.getQuantity());
-            //product.getStockQuantity() is the total stock count of that product
-            // & oldItem.getQuantity() is the total stock ordered in that order
+        if (updatedOrder.getPaymentMode() == null) {
+            throw new IllegalArgumentException("Payment mode must be provided");
         }
 
-        // Clearing the current items
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        // Restore stock from old items
+        for (OrderItem oldItem : existingOrder.getOrderItems()) {
+            Product product = oldItem.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + oldItem.getQuantity());
+            productRepository.save(product);
+        }
+
         existingOrder.getOrderItems().clear();
 
         double totalAmount = 0.0;
         List<OrderItem> newItems = new ArrayList<>();
 
-        for(OrderItemsRequestDTO itemDTO: updatedOrder.getItems()) {
+        for (OrderItemsRequestDTO itemDTO : updatedOrder.getItems()) {
             Product product = productRepository.findById(itemDTO.getProductId())
-                    .orElseThrow(() ->
-                            new EntityNotFoundException
-                                    ("Product not found with id " + itemDTO.getProductId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found with id " + itemDTO.getProductId()));
+
+            if (product.getStockQuantity() < itemDTO.getQuantity()) {
+                throw new IllegalArgumentException("Insufficient stock for product " + product.getName());
+            }
+
+            // Deduct stock for updated order
+            product.setStockQuantity(product.getStockQuantity() - itemDTO.getQuantity());
+            productRepository.save(product);
 
             double subTotal = product.getPrice() * itemDTO.getQuantity();
-            totalAmount = totalAmount + subTotal;
+            totalAmount += subTotal;
 
             OrderItem item = new OrderItem();
             item.setProduct(product);
@@ -145,21 +137,37 @@ public class OrderService {
 
             newItems.add(item);
         }
+
         existingOrder.setOrderItems(newItems);
+        existingOrder.setPaymentMode(updatedOrder.getPaymentMode());
         existingOrder.setTotalAmount(totalAmount);
 
         return orderRepository.save(existingOrder);
     }
-    /// delete
+
+    /**
+     * Deletes an order and restores product stock.
+     */
+    @Transactional
     public String deleteOrderById(Long orderId) {
-        orderRepository.deleteById(orderId);
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        for (OrderItem item : existingOrder.getOrderItems()) {
+            Product product = item.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+            productRepository.save(product);
+        }
+
+        orderRepository.delete(existingOrder);
         return "Order Deleted Successfully";
     }
 
-    /// sorting based on field
-    public  List<OrderResponseDTO> findOrderByField(String field) {
-        List<Order> orders = orderRepository.findAll(Sort.by(field));
-        return orders.stream()
+    /**
+     * Sort orders by field.
+     */
+    public List<OrderResponseDTO> findOrderByField(String field) {
+        return orderRepository.findAll(Sort.by(field)).stream()
                 .map(OrderMapper::mapOrderResponseDTO)
                 .collect(Collectors.toList());
     }

@@ -1,13 +1,11 @@
 spring:
   application:
     name: PatelPOS
-
   datasource:
     url: jdbc:postgresql://localhost:5432/POSdb
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,10 +13,14 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   sql:
     init:
       mode: always
+
+app:
+  jwt:
+    secret: "harshivpatelharshivpatelharshivpatel09"
+    expiration-ms: 86400000
 
 server:
   port: 8080

@@ -23,22 +23,8 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public boolean saveNewUser(User user) {
-        try {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setRoles(Arrays.asList("USER"));
-            userRepository.save(user);
-            return true;
-        }
-        catch (Exception e) {
-            log.error("Error occurred for {}", user.getUsername(), e);
-            return false;
-        }
-
-    }
-
-    public void saveUser(User user) {
-        userRepository.save(user);
+    public User saveUser(User user) {
+            return userRepository.save(user);
     }
 
     public List<User> getAll() {

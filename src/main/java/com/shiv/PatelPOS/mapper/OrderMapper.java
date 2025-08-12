@@ -15,6 +15,7 @@ public class OrderMapper {
             dto.setOrderId(order.getOrderId());
             dto.setOrderDate(order.getOrderDate());
             dto.setTotalAmount(order.getTotalAmount());
+            dto.setPaymentMode(order.getPaymentMode());
 
         List<OrderItemsResponseDTO> itemsDTOs = new ArrayList<>();
 
