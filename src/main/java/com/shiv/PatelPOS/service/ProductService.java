@@ -5,6 +5,7 @@ import com.shiv.PatelPOS.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,14 +22,17 @@ public class ProductService {
     }
 
     /// save
+    @PreAuthorize("hasRole('MANAGER')")
     public Product saveProduct(Product product) {
         return productRepository.save(product);
     }
     /// get
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public List<Product> fetchProducts() {
         return productRepository.findAll();
     }
     /// update
+    @PreAuthorize("hasRole('MANAGER')")
     public Product updateProduct(Product updatedProduct, Long productId) {
 
         // this is just a wrapper returned by the repo, doesn't give direct access to perform operations
@@ -51,16 +55,19 @@ public class ProductService {
     }
 
     /// delete
+    @PreAuthorize("hasRole('MANAGER')")
     public void deleteProductById(Long productId) {
         productRepository.deleteById(productId);
     }
 
     /// search with keyword
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public List<Product> searchProducts(String keyword) {
         return productRepository.searchProducts(keyword);
     }
 
     /// sorting based on field
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public List<Product> findProductByField(String field) {
         return productRepository.findAll(Sort.by(field));
     }

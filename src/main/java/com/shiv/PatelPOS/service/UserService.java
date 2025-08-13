@@ -5,6 +5,7 @@ import com.shiv.PatelPOS.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,6 @@ public class UserService {
     public User saveUser(User user) {
             return userRepository.save(user);
     }
-
     public List<User> getAll() {
         return userRepository.findAll();
     }

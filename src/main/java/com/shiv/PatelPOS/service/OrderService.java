@@ -12,6 +12,7 @@ import com.shiv.PatelPOS.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class OrderService {
     /**
      * Saves a new order with its associated order items.
      */
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     @Transactional
     public Order saveOrder(OrderRequestDTO orderRequestDTO) {
         if (orderRequestDTO.getPaymentMode() == null) {
@@ -85,6 +87,7 @@ public class OrderService {
     /**
      * Get all orders.
      */
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
@@ -93,6 +96,7 @@ public class OrderService {
      * Updates an existing order by its ID with new order item details.
      */
     @Transactional
+    @PreAuthorize("hasRole('MANAGER')")
     public Order updateOrderById(OrderRequestDTO updatedOrder, Long orderId) {
         if (updatedOrder.getPaymentMode() == null) {
             throw new IllegalArgumentException("Payment mode must be provided");
@@ -149,6 +153,7 @@ public class OrderService {
      * Deletes an order and restores product stock.
      */
     @Transactional
+    @PreAuthorize("hasRole('MANAGER')")
     public String deleteOrderById(Long orderId) {
         Order existingOrder = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
@@ -166,6 +171,7 @@ public class OrderService {
     /**
      * Sort orders by field.
      */
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public List<OrderResponseDTO> findOrderByField(String field) {
         return orderRepository.findAll(Sort.by(field)).stream()
                 .map(OrderMapper::mapOrderResponseDTO)

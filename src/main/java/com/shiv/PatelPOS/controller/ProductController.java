@@ -46,8 +46,8 @@ public class ProductController {
         return "Deleted Successfully";
     }
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyboard) {
-        List<Product> products = productService.searchProducts(keyboard);
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
+        List<Product> products = productService.searchProducts(keyword  );
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
     @GetMapping("/{field}")
