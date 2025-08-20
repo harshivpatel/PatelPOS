@@ -23,4 +23,4 @@ app:
     expiration-ms: 86400000
 
 server:
-  port: 8080
+  port: 5000
