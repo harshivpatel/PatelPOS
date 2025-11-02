@@ -26,7 +26,6 @@ It supports staff and manager roles, predefined products displayed for selection
 | Backend | Spring Boot, Java |
 | Database | MySQL |
 | Authentication | JWT (or session-based) |
-| Tools | Git, Maven/Gradle, Docker (optional) |
 
 ---
 
