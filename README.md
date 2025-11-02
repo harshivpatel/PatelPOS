@@ -1,31 +1,34 @@
 # PatelPOS – Point of Sale System
 
-PatelPOS is a full-stack Point of Sale (POS) software designed for small retail operations.  
-It supports staff and manager roles, predefined products displayed for selection, cash or card payment options, and order history management.
+PatelPOS is a Java Spring Boot-based Point of Sale (POS) application designed for small retail environments.  
+It enables staff to manage sales efficiently and managers to oversee orders, products, and transactions.
 
 ---
 
 ## Features
 
-- Staff login and product selection interface  
-- Checkout via Cash or Card, recorded in system  
-- Manager role with capabilities:  
-  - Add new products  
-  - View and edit past orders  
-  - Retrieve full order history  
-- Predefined products for quick staff access (no SKU scanning)  
-- Simple two-role authorization (Staff / Manager)  
-- Responsive UI suitable for till environments  
-- Backend built with Spring Boot and MySQL (or your specified stack)  
+- Secure user authentication with role-based access (Staff and Manager)
+- Staff role:
+  - Select from predefined products
+  - Place and record orders via Cash or Card
+- Manager role:
+  - Add or update products
+  - View and edit past orders
+  - Retrieve complete order history
+- Clean RESTful API structure for easy future frontend integration
+- Order and OrderItem relationship with persistent storage in MySQL
+- Logging and exception handling integrated throughout the backend
 
 ---
 
+
 ## Tech Stack
 
-| Frontend | (Specify your chosen framework, e.g., Angular 12, React) |
-| Backend | Spring Boot, Java |
+| Backend | Java, Spring Boot, Spring Data JPA |
 | Database | MySQL |
-| Authentication | JWT (or session-based) |
+| Build Tool | Maven |
+| Authentication | JWT or Session-based authentication |
+| Tools | Git, IntelliJ IDEA, Postman |
 
 ---
 
