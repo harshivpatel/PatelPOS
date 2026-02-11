@@ -1,6 +1,6 @@
 # Point of Sale System
 
-PatelPOS is a Java Spring Boot-based Point of Sale (POS) application designed for small retail environments.  
+This is a Java Spring Boot-based Point of Sale (POS) application designed for small retail environments.  
 It enables staff to manage sales efficiently and managers to oversee orders, products, and transactions.
 
 ---
