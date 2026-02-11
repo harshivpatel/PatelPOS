@@ -21,21 +21,33 @@ It enables staff to manage sales efficiently and managers to oversee orders, pro
 
 ---
 
-
 ## Tech Stack
 
+| Layer | Technologies |
+|------|-------------|
 | Backend | Java, Spring Boot, Spring Data JPA |
 | Database | MySQL |
 | Build Tool | Maven |
-| Authentication | JWT or Session-based authentication |
+| Authentication | JWT or Session-based |
 | Tools | Git, IntelliJ IDEA, Postman |
 
 ---
 
 ## Setup and Installation
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/harshivpatel/PatelPOS.git
-cd PatelPOS
+### Prerequisites
 
+Make sure you have the following installed:
+
+- **Java JDK 17+** (recommended for Spring Boot)
+- **Maven** (or use the Maven wrapper `mvnw`)
+- **MySQL Server**
+- **Git**
+- (Optional) **Postman** for API testing
+
+Check versions:
+
+```bash
+java -version
+mvn -v
+mysql --version
